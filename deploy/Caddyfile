@@ -1,0 +1,7 @@
+# Replace game.example.com with your domain: Caddy obtains and renews the
+# HTTPS certificate on its own. reverse_proxy also carries WebSocket traffic
+# (/ws, /admin/ws) and passes the visitor's address in X-Forwarded-For.
+game.example.com {
+	encode gzip
+	reverse_proxy 127.0.0.1:8080
+}

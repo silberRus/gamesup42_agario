@@ -1,0 +1,10 @@
+# build output
+/agario
+/agario.exe
+
+# runtime data
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+.env

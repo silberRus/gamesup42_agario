@@ -1,0 +1,25 @@
+[Unit]
+Description=Game server "Первый этап отбора"
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=agario
+Group=agario
+WorkingDirectory=/opt/agario
+# PORT, ADMIN_PASSWORD, DB_PATH, TOKENS, REPO_URL
+EnvironmentFile=/opt/agario/.env
+ExecStart=/opt/agario/agario
+Restart=always
+RestartSec=2
+LimitNOFILE=65536
+
+# The service only needs to write its SQLite file.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/agario
+
+[Install]
+WantedBy=multi-user.target

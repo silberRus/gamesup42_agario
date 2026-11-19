@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Пульт наблюдения</title>
+<style>
+  :root { --bg: #0b0c16; --card: #15172a; --line: #272a45; --ink: #e8ecff; --dim: #8f95b8; --cyan: #37e6ff; --pink: #ff3fd2; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 20px; background: var(--bg); color: var(--ink);
+    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header, #controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  h1 { margin: 0; font-size: 24px; text-shadow: 0 0 12px var(--cyan); }
+  h2 { margin: 28px 0 10px; font-size: 16px; }
+  h2 small { font-weight: 400; color: var(--dim); }
+  #status { color: var(--dim); margin-right: auto; }
+  #status.on::before { content: "● "; color: #4cd787; }
+  #status.off::before { content: "● "; color: var(--pink); }
+  #ownerNote { color: var(--dim); flex-basis: 100%; text-align: right; }
+  #ownerNote:empty { display: none; }
+
+  button, input, select { font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--line);
+    border-radius: 7px; padding: 6px 12px; }
+  button { cursor: pointer; }
+  button:hover { border-color: var(--cyan); }
+  button.danger:hover { border-color: var(--pink); }
+  input[type=number] { width: 80px; }
+  #controls { margin-top: 18px; padding: 12px 14px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
+  #controls form { display: flex; align-items: center; gap: 8px; margin: 0; }
+  #controls .danger { margin-left: auto; }
+
+  #charts { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+  .chart { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  .chart h3 { margin: 0; font-size: 12px; font-weight: 500; color: var(--dim); }
+  .chart .value { min-height: 28px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 14px; color: var(--dim); font-size: 12px; }
+  .chart .value b { color: var(--ink); font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .chart .value i { display: inline-block; width: 10px; height: 3px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
+  .chart canvas { display: block; width: 100%; height: 64px; margin-top: 6px; }
+
+  .scroll { overflow-x: auto; background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
+  table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+  th, td { padding: 7px 12px; text-align: left; border-bottom: 1px solid var(--line); }
+  th { font-size: 12px; font-weight: 500; color: var(--dim); }
+  tr:last-child td { border-bottom: 0; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.ua { max-width: 320px; overflow: hidden; text-overflow: ellipsis; color: var(--dim); }
+  td.empty { color: var(--dim); text-align: center; }
+  td button { padding: 2px 10px; }
+  .tag { margin-left: 6px; padding: 1px 8px; border-radius: 99px; font-size: 12px; border: 1px solid var(--pink); }
+  .tag.me { border-color: var(--cyan); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Пульт наблюдения</h1>
+  <span id="status" class="off">нет связи</span>
+  <button id="markOwner">Отметить этот браузер как мой</button>
+  <span id="ownerNote"></span>
+</header>
+
+<section id="controls">
+  <form id="botsForm">
+    <label for="bots">Ботов</label>
+    <input id="bots" type="number" min="0" max="50" required>
+    <button>Применить</button>
+  </form>
+  <label for="difficulty">Сложность ботов</label>
+  <select id="difficulty">
+    <option value="easy">лёгкая</option>
+    <option value="normal">нормальная</option>
+    <option value="hard">сложная</option>
+  </select>
+  <button id="reset" class="danger">Сбросить мир</button>
+</section>
+
+<h2>Нагрузка <small>за последние 5 минут</small></h2>
+<div id="charts"></div>
+
+<h2>Игроки</h2>
+<div class="scroll">
+  <table>
+    <thead><tr>
+      <th>Имя</th><th>Тип</th><th>IP</th><th>User-Agent</th><th>Вошёл</th>
+      <th class="num">В игре</th><th class="num">Пинг</th><th class="num">Масса</th><th></th>
+    </tr></thead>
+    <tbody id="players"></tbody>
+  </table>
+</div>
+
+<h2>История сессий <small>последние 100</small></h2>
+<div class="scroll">
+  <table>
+    <thead><tr>
+      <th>Имя</th><th>IP</th><th>User-Agent</th><th>Начало</th><th>Конец</th><th class="num">Макс. масса</th>
+    </tr></thead>
+    <tbody id="sessions"></tbody>
+  </table>
+</div>
+
+<script src="admin/admin.js"></script>
+</body>
+</html>

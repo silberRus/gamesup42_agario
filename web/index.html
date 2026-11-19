@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Первый этап отбора</title>
+<style>
+  :root { --bg: #07070f; --ink: #e8ecff; --dim: #8a90b4; --cyan: #37e6ff; --pink: #ff3fd2; --panel: rgba(12, 14, 30, .78); }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink);
+    font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; }
+
+  #hud > * { position: fixed; pointer-events: none; }
+  .panel { background: var(--panel); border: 1px solid rgba(55, 230, 255, .25); border-radius: 10px; padding: 10px 14px; }
+  #score { top: 12px; left: 12px; }
+  #score b { color: var(--cyan); font-variant-numeric: tabular-nums; }
+  #board { top: 12px; right: 12px; width: 230px; }
+  #board h3 { margin: 0 0 6px; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--pink); }
+  #board ol { margin: 0; padding: 0; list-style: none; counter-reset: place; }
+  #board li { display: flex; gap: 8px; counter-increment: place; font-size: 14px; }
+  #board li::before { content: counter(place) "."; color: var(--dim); width: 1.5em; }
+  #board li span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #board li b { margin-left: auto; font-weight: 500; color: var(--dim); font-variant-numeric: tabular-nums; }
+  #board li.me span { color: var(--cyan); }
+  #board em { flex: none; font-style: normal; font-size: 12px; color: #ffd75e; }
+  #feed { left: 12px; bottom: 12px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: var(--dim); }
+  #feed .mine { color: var(--pink); }
+  #toast { position: fixed; top: 18%; left: 50%; transform: translateX(-50%); max-width: 90vw; text-align: center;
+    border-color: var(--pink); box-shadow: 0 0 24px rgba(255, 63, 210, .45); pointer-events: none; }
+
+  .overlay { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 16px; background: rgba(7, 7, 15, .72); text-align: center; }
+  .card { width: min(440px, 100%); padding: 28px 24px; border-radius: 14px; background: var(--panel);
+    border: 1px solid rgba(55, 230, 255, .4); box-shadow: 0 0 40px rgba(55, 230, 255, .18); }
+  h1 { margin: 0; font-size: 30px; line-height: 1.15; color: #fff; text-shadow: 0 0 14px var(--cyan); }
+  h2 { margin: 8px 0 0; font-size: 16px; font-weight: 500; color: var(--cyan); }
+  .tagline { margin: 14px 0 20px; color: var(--dim); font-style: italic; }
+  #notice { color: var(--pink); }
+  #death h1 { font-size: 22px; text-shadow: 0 0 14px var(--pink); }
+  #death p { margin: 12px 0 0; }
+  #death button { margin-top: 20px; }
+  input, button { width: 100%; padding: 12px 14px; border-radius: 9px; font: inherit; font-size: 16px; }
+  input { background: #0c0e1e; color: var(--ink); border: 1px solid rgba(55, 230, 255, .4); outline: none; text-align: center; }
+  input:focus { border-color: var(--cyan); box-shadow: 0 0 12px rgba(55, 230, 255, .4); }
+  button { margin-top: 10px; cursor: pointer; border: 0; font-weight: 600; color: #05050c;
+    background: linear-gradient(90deg, var(--cyan), var(--pink)); }
+  button:hover { filter: brightness(1.12); }
+  footer { position: absolute; bottom: 12px; left: 12px; right: 12px; font-size: 12px; color: var(--dim); }
+  footer a { color: var(--cyan); }
+  @media (max-width: 600px) { #board { width: 170px; } #board li { font-size: 12px; } h1 { font-size: 24px; } }
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="hud" hidden>
+  <div id="score" class="panel">Съедено токенов: <b id="eaten">0</b><br>Масса: <b id="mass">0</b></div>
+  <div id="board" class="panel"><h3>Шорт-лист</h3><ol id="leaders"></ol></div>
+  <div id="feed"></div>
+</div>
+<div id="toast" class="panel" hidden>Ответ на главный вопрос жизни, вселенной и найма найден.</div>
+
+<div id="login" class="overlay">
+  <form id="join" class="card">
+    <h1>Первый этап отбора</h1>
+    <h2>Андрея Карецкого для GamesUp42</h2>
+    <p class="tagline">Выживает сильнейший кандидат.</p>
+    <p id="notice" hidden></p>
+    <input id="nick" maxlength="16" placeholder="Имя кандидата" autocomplete="off" autofocus>
+    <button>Пройти отбор</button>
+  </form>
+  <footer>Тестовое задание для GamesUp42 · Автор: Андрей Карецкий{{if .Tokens}} · Собрано с AI за {{.Tokens}} токенов{{end}}{{if .RepoURL}} · <a href="{{.RepoURL}}" target="_blank" rel="noopener">GitHub</a>{{end}}</footer>
+</div>
+
+<div id="death" class="overlay" hidden>
+  <div class="card">
+    <h1>К сожалению, ваша кандидатура отклонена.</h1>
+    <p id="killer"></p>
+    <p>Съедено токенов: <b id="final">0</b></p>
+    <button id="respawn">Отправить резюме повторно</button>
+  </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
